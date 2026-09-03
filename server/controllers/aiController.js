@@ -5,7 +5,8 @@ import axios from "axios";
 import { v2 as cloudinary } from "cloudinary";
 import fs from 'fs'  // file system Node.js ka built-in module hai jo files/folders ke saath kaam karne deta hai.loke read,write,delete
 //import pdf from 'pdf-parse/lib/pdf-parse.js'
-import { PDFParse } from 'pdf-parse'
+//import { PDFParse } from 'pdf-parse'
+import pdf from 'pdf-parse-fork';
 
 const AI = new OpenAI({
     apiKey: process.env.GEMINI_API_KEY,
@@ -226,13 +227,17 @@ export const resumeReview = async (req, res)=>{
         // const dataBuffer = fs.readFileSync(resume.path) 
         // const pdfData = await pdf(dataBuffer) 
         
-        const dataBuffer = fs.readFileSync(resume.path) //resume.path se uploaded PDF file ko read karta hai aur Buffer (binary data) me store karta hai.
-        const parser = new PDFParse({ data: dataBuffer }) // PDF buffer ko pdf() function me deta hai, jo PDF ko parse karke uska text extract karta hai.
-        const pdfData = await parser.getText()
+        // const dataBuffer = fs.readFileSync(resume.path) //resume.path se uploaded PDF file ko read karta hai aur Buffer (binary data) me store karta hai.
+        // const parser = new PDFParse({ data: dataBuffer }) // PDF buffer ko pdf() function me deta hai, jo PDF ko parse karke uska text extract karta hai.
+        // const pdfData = await parser.getText()
+
+        const dataBuffer = fs.readFileSync(resume.path)
+        const pdfData = await pdf(dataBuffer)
 
         const prompt = `Review the following resume and provide constructive feedback on its strengths, weaknesses, and areas for improvement. Resume Content:\n\n${pdfData.text}`
-       // send data to google gemini for response
-       const response = await AI.chat.completions.create({
+       
+        // send data to google gemini for response
+        const response = await AI.chat.completions.create({
             model: "gemini-3.5-flash-lite",
             messages: [{ role: "user", content: prompt, } ],
             temperature: 0.7,
